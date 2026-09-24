@@ -1,0 +1,259 @@
+/* AI-Powered Cyber Threat Analysis Dashboard - SOC Cyber Theme */
+
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+:root {
+    --bg-main: #0B0F19;
+    --bg-card: rgba(17, 24, 39, 0.75);
+    --bg-card-hover: rgba(30, 41, 59, 0.85);
+    --border-color: rgba(56, 189, 248, 0.2);
+    --border-glow: rgba(0, 245, 255, 0.4);
+    --text-primary: #F8FAFC;
+    --text-secondary: #94A3B8;
+    --cyan-neon: #00F5FF;
+    --green-neon: #00FF66;
+    --amber-neon: #FFB703;
+    --red-neon: #FF0055;
+    --purple-neon: #8A2BE2;
+}
+
+body, [data-testid="stAppViewContainer"] {
+    background-color: var(--bg-main) !important;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif !important;
+    color: var(--text-primary) !important;
+}
+
+/* Monospace text for logs and hashes */
+code, pre, .mono-text, [data-testid="stCode"] {
+    font-family: 'JetBrains Mono', monospace !important;
+}
+
+/* Cyber Header Glow */
+.cyber-header {
+    background: linear-gradient(135deg, rgba(0, 245, 255, 0.1) 0%, rgba(138, 43, 226, 0.1) 100%);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 18px 24px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 20px -2px rgba(0, 245, 255, 0.15);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.cyber-title {
+    font-size: 26px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    background: linear-gradient(90deg, #00F5FF 0%, #38BDF8 50%, #A855F7 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin: 0;
+}
+
+.cyber-badge {
+    background: rgba(0, 245, 255, 0.15);
+    border: 1px solid var(--cyan-neon);
+    color: var(--cyan-neon);
+    padding: 4px 12px;
+    border-radius: 9999px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+}
+
+/* KPI Card Grid */
+.kpi-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 14px;
+    margin-bottom: 22px;
+}
+
+.kpi-card {
+    background: var(--bg-card);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    padding: 16px;
+    transition: all 0.25s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.kpi-card:hover {
+    border-color: var(--cyan-neon);
+    box-shadow: 0 0 15px rgba(0, 245, 255, 0.2);
+    transform: translateY(-2px);
+}
+
+.kpi-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 100%;
+    background: var(--cyan-neon);
+}
+
+.kpi-card.critical::before { background: var(--red-neon); }
+.kpi-card.high::before { background: #FF5E00; }
+.kpi-card.medium::before { background: var(--amber-neon); }
+.kpi-card.low::before { background: #38BDF8; }
+.kpi-card.success::before { background: var(--green-neon); }
+
+.kpi-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    font-weight: 600;
+    letter-spacing: 0.8px;
+    color: var(--text-secondary);
+    margin-bottom: 6px;
+}
+
+.kpi-value {
+    font-size: 28px;
+    font-weight: 800;
+    color: var(--text-primary);
+    line-height: 1.1;
+    font-family: 'JetBrains Mono', monospace;
+}
+
+.kpi-subtext {
+    font-size: 11px;
+    color: var(--text-secondary);
+    margin-top: 4px;
+}
+
+/* Severity Badges */
+.severity-pill {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+}
+
+.severity-critical {
+    background: rgba(255, 0, 85, 0.18);
+    border: 1px solid var(--red-neon);
+    color: #FF6B8B;
+}
+
+.severity-high {
+    background: rgba(255, 94, 0, 0.18);
+    border: 1px solid #FF5E00;
+    color: #FFA552;
+}
+
+.severity-medium {
+    background: rgba(255, 183, 3, 0.18);
+    border: 1px solid var(--amber-neon);
+    color: #FFD166;
+}
+
+.severity-low {
+    background: rgba(56, 189, 248, 0.18);
+    border: 1px solid #38BDF8;
+    color: #7DD3FC;
+}
+
+.severity-info {
+    background: rgba(0, 255, 102, 0.18);
+    border: 1px solid var(--green-neon);
+    color: #6EE7B7;
+}
+
+/* Threat Details Box */
+.threat-card {
+    background: rgba(15, 23, 42, 0.7);
+    border: 1px solid rgba(56, 189, 248, 0.15);
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 12px;
+    transition: all 0.2s;
+}
+
+.threat-card:hover {
+    border-color: rgba(56, 189, 248, 0.35);
+    background: rgba(15, 23, 42, 0.9);
+}
+
+/* Cyber Button Customization */
+div.stButton > button {
+    background: linear-gradient(135deg, #0F172A 0%, #1E293B 100%) !important;
+    color: #00F5FF !important;
+    border: 1px solid rgba(0, 245, 255, 0.4) !important;
+    border-radius: 6px !important;
+    font-weight: 600 !important;
+    letter-spacing: 0.5px !important;
+    transition: all 0.2s ease !important;
+}
+
+div.stButton > button:hover {
+    background: linear-gradient(135deg, #00F5FF 0%, #0284C7 100%) !important;
+    color: #000000 !important;
+    border-color: #00F5FF !important;
+    box-shadow: 0 0 15px rgba(0, 245, 255, 0.5) !important;
+}
+
+/* Primary Action Buttons */
+div.stButton > button[kind="primary"] {
+    background: linear-gradient(135deg, #00F5FF 0%, #0077B6 100%) !important;
+    color: #050B14 !important;
+    font-weight: 700 !important;
+    border: 1px solid #00F5FF !important;
+    box-shadow: 0 0 12px rgba(0, 245, 255, 0.3) !important;
+}
+
+div.stButton > button[kind="primary"]:hover {
+    background: linear-gradient(135deg, #38BDF8 0%, #00F5FF 100%) !important;
+    color: #000000 !important;
+    box-shadow: 0 0 20px rgba(0, 245, 255, 0.6) !important;
+}
+
+/* Sidebar Styling */
+[data-testid="stSidebar"] {
+    background-color: #090D16 !important;
+    border-right: 1px solid rgba(56, 189, 248, 0.12) !important;
+}
+
+/* Tables and Dataframes */
+[data-testid="stDataFrame"] {
+    border: 1px solid rgba(56, 189, 248, 0.2) !important;
+    border-radius: 8px !important;
+    overflow: hidden;
+}
+
+/* Chat Messages */
+.chat-analyst-message {
+    background: rgba(14, 165, 233, 0.1);
+    border-left: 3px solid #00F5FF;
+    border-radius: 6px;
+    padding: 12px 16px;
+    margin: 8px 0;
+}
+
+.chat-user-message {
+    background: rgba(138, 43, 226, 0.1);
+    border-left: 3px solid #A855F7;
+    border-radius: 6px;
+    padding: 12px 16px;
+    margin: 8px 0;
+}
+
+/* Pulse animation for critical alerts */
+@keyframes cyber-pulse {
+    0% { box-shadow: 0 0 0 0 rgba(255, 0, 85, 0.5); }
+    70% { box-shadow: 0 0 0 10px rgba(255, 0, 85, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(255, 0, 85, 0); }
+}
+
+.alert-pulse {
+    animation: cyber-pulse 2s infinite;
+}

