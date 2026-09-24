@@ -17,7 +17,10 @@ st.set_page_config(
 )
 
 # 2. Imports from internal modules
-from modules.config import ASSETS_DIR, THREAT_CATALOG, MALWARE_FAMILIES
+from modules.config import (
+    ASSETS_DIR, THREAT_CATALOG, MALWARE_FAMILIES,
+    VIRUSTOTAL_API_KEY, ABUSEIPDB_API_KEY, ALIENVAULT_OTX_KEY
+)
 from modules.database import db
 from modules.authentication import (
     init_session_state, render_login_form, get_current_user,
@@ -66,7 +69,11 @@ if "chat_history" not in st.session_state:
         {"role": "assistant", "content": "Greetings, Analyst. I am your autonomous AI SOC Copilot. Ask me to summarize today's threats, investigate suspicious IPs, or recommend triage actions."}
     ]
 if "api_keys" not in st.session_state:
-    st.session_state.api_keys = {"vt": "", "abuse": "", "otx": ""}
+    st.session_state.api_keys = {
+        "vt": VIRUSTOTAL_API_KEY,
+        "abuse": ABUSEIPDB_API_KEY,
+        "otx": ALIENVAULT_OTX_KEY
+    }
 
 def load_demo_data():
     """Seeds the session with realistic multi-vector cyber telemetry."""

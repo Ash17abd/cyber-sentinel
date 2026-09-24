@@ -10,7 +10,7 @@ import os
 import secrets
 from datetime import datetime, timezone
 from typing import List, Dict, Any, Optional, Tuple
-from modules.config import DB_PATH, DATA_DIR
+from modules.config import DB_PATH, DATA_DIR, ADMIN_PASSWORD, ANALYST_PASSWORD, VIEWER_PASSWORD
 
 class DatabaseManager:
     """Thread-safe SQLite Database Manager for SOC Telemetry & User Data."""
@@ -171,9 +171,9 @@ class DatabaseManager:
     def _seed_default_users(self) -> None:
         """Seeds standard enterprise roles if users table is empty."""
         default_accounts = [
-            ("admin", "Admin@12345", "Admin", "SOC Lead Administrator", "admin@soc.defense.corp"),
-            ("analyst", "Analyst@12345", "Security Analyst", "Tier-2 SOC Analyst", "analyst@soc.defense.corp"),
-            ("viewer", "Viewer@12345", "Viewer", "Incident Auditor", "auditor@soc.defense.corp")
+            ("admin", ADMIN_PASSWORD, "Admin", "SOC Lead Administrator", "admin@soc.defense.corp"),
+            ("analyst", ANALYST_PASSWORD, "Security Analyst", "Tier-2 SOC Analyst", "analyst@soc.defense.corp"),
+            ("viewer", VIEWER_PASSWORD, "Viewer", "Incident Auditor", "auditor@soc.defense.corp")
         ]
 
         with self.get_connection() as conn:

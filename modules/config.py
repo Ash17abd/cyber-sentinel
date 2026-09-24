@@ -6,13 +6,25 @@ Malware Families, Severity Weights, and System Constants.
 
 from typing import Dict, List, Any
 import os
+from dotenv import load_dotenv
+
+# Load optional .env file
+load_dotenv()
 
 # Base paths
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-DATA_DIR = os.path.join(BASE_DIR, "data")
+DATA_DIR = os.getenv("DATA_DIR", os.path.join(BASE_DIR, "data"))
 SAMPLE_LOGS_DIR = os.path.join(DATA_DIR, "sample_logs")
-DB_PATH = os.path.join(DATA_DIR, "threats.db")
+DB_PATH = os.getenv("DB_PATH", os.path.join(DATA_DIR, "threats.db"))
 ASSETS_DIR = os.path.join(BASE_DIR, "assets")
+
+# Security & API Secrets from Environment
+VIRUSTOTAL_API_KEY = os.getenv("VIRUSTOTAL_API_KEY", "")
+ABUSEIPDB_API_KEY = os.getenv("ABUSEIPDB_API_KEY", "")
+ALIENVAULT_OTX_KEY = os.getenv("ALIENVAULT_OTX_KEY", "")
+ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "Admin@12345")
+ANALYST_PASSWORD = os.getenv("ANALYST_PASSWORD", "Analyst@12345")
+VIEWER_PASSWORD = os.getenv("VIEWER_PASSWORD", "Viewer@12345")
 
 # Cyber Theme Color Palette
 THEME_COLORS = {
