@@ -30,12 +30,10 @@ Streamlit Community Cloud is the official cloud platform built by Snowflake for 
 
 ```powershell
 cd "c:\Users\Ashwin Chikkala\OneDrive\Desktop\cyber project"
-git remote add origin https://github.com/<YOUR_GITHUB_USERNAME>/cyber-sentinel.git
+git remote add origin https://github.com/Ash17abd/cyber-sentinel.git
 git branch -M main
 git push -u origin main
 ```
-
-*(Replace `<YOUR_GITHUB_USERNAME>` with your actual GitHub username).*
 
 ---
 
@@ -43,9 +41,9 @@ git push -u origin main
 
 1. Go to [share.streamlit.io](https://share.streamlit.io/) (or [streamlit.io/cloud](https://streamlit.io/cloud)).
 2. Click **Sign in with GitHub**.
-3. Once logged in, click the **"New app"** button.
+3. Once logged in, click the **"New app"** button (or click the Direct Deploy Link below).
 4. Fill in the deployment form:
-   - **Repository**: `<YOUR_GITHUB_USERNAME>/cyber-sentinel`
+   - **Repository**: `Ash17abd/cyber-sentinel`
    - **Branch**: `main`
    - **Main file path**: `app.py`
    - **App URL (Customize)**: `cyber-sentinel-soc` (or any available subdomain).
@@ -89,7 +87,7 @@ If you have a Linux server (e.g. AWS EC2, DigitalOcean Droplet, Linode, or Oracl
 
 ### 1. Clone your repository on the server
 ```bash
-git clone https://github.com/<YOUR_GITHUB_USERNAME>/cyber-sentinel.git
+git clone https://github.com/Ash17abd/cyber-sentinel.git
 cd cyber-sentinel
 ```
 
