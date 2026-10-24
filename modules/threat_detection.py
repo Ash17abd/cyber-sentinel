@@ -205,6 +205,59 @@ class ThreatDetectionEngine:
                         })
                         break  # Match first highest pattern for this threat
 
+            # Check explicit attack labels from dataset (e.g. Kaggle Attack Type, Malware Indicators)
+            evt_type_val = str(row.get('event_type', '')).strip()
+            evt_lower = evt_type_val.lower()
+            details_lower = str(row.get('details', '')).lower()
+            raw_lower = str(row.get('raw_log', '')).lower()
+            sev_from_file = str(row.get('severity', '')).strip().capitalize() if row.get('severity') else ""
+
+            mapped_attack = None
+            if any(k in evt_lower or k in details_lower or k in raw_lower for k in ["ddos", "denial of service", "syn flood", "udp flood"]):
+                mapped_attack = "DDoS Attack"
+            elif any(k in evt_lower or k in details_lower or k in raw_lower for k in ["malware", "trojan", "botnet", "ioc detected", "malware indicator"]):
+                mapped_attack = "Malware Indicators"
+            elif any(k in evt_lower or k in details_lower or k in raw_lower for k in ["intrusion", "intrusion detection", "perimeter breach"]):
+                mapped_attack = "Intrusion Attempt"
+            elif any(k in evt_lower or k in details_lower or k in raw_lower for k in ["ransomware", "encryptor", "shadow copy delete"]):
+                mapped_attack = "Ransomware Indicators"
+            elif any(k in evt_lower or k in details_lower or k in raw_lower for k in ["brute force", "failed logon", "password spray"]):
+                mapped_attack = "Brute Force Attack"
+            elif any(k in evt_lower or k in details_lower or k in raw_lower for k in ["port scan", "portscan", "nmap", "syn scan"]):
+                mapped_attack = "Port Scanning"
+            elif any(k in evt_lower or k in details_lower or k in raw_lower for k in ["sqli", "sql injection"]):
+                mapped_attack = "SQL Injection"
+            elif any(k in evt_lower or k in details_lower or k in raw_lower for k in ["xss", "cross-site scripting", "cross site"]):
+                mapped_attack = "Cross Site Scripting (XSS)"
+            elif any(k in evt_lower or k in details_lower or k in raw_lower for k in ["exfiltration", "data theft"]):
+                mapped_attack = "Data Exfiltration Patterns"
+
+            if mapped_attack and mapped_attack in THREAT_CATALOG:
+                # Avoid duplicate if already matched above by regex
+                if not any(t.get("source_ip") == src_ip and t.get("threat_name") == mapped_attack for t in threats):
+                    cat_entry = THREAT_CATALOG[mapped_attack]
+                    eff_sev = sev_from_file if sev_from_file in ["Critical", "High", "Medium", "Low", "Info"] else cat_entry.get("severity", "High")
+                    threats.append({
+                        "upload_id": upload_id,
+                        "threat_name": mapped_attack,
+                        "severity": eff_sev,
+                        "confidence": 95.0,
+                        "source_ip": src_ip,
+                        "destination_ip": dst_ip,
+                        "timestamp": timestamp,
+                        "evidence": f"Telemetry Attack Flag: '{evt_type_val or mapped_attack}' originating from {src_ip} ({c_val or 'Identified Origin'}).",
+                        "mitre_id": cat_entry.get("mitre_id", "T1000"),
+                        "mitre_technique": cat_entry.get("mitre_technique", "Unknown"),
+                        "kill_chain_stage": cat_entry.get("kill_chain_stage", "Exploitation"),
+                        "impact": cat_entry.get("impact", ""),
+                        "recommendation": cat_entry.get("recommendation", ""),
+                        "country": c_val,
+                        "city": city_val,
+                        "latitude": lat_val,
+                        "longitude": lon_val,
+                        "isp": isp_val
+                    })
+
         # 2. Behavioral Aggregation: Brute Force Detection
         threats.extend(cls._detect_brute_force(df, upload_id))
 
@@ -264,7 +317,12 @@ class ThreatDetectionEngine:
                     "mitre_technique": catalog_entry["mitre_technique"],
                     "kill_chain_stage": catalog_entry["kill_chain_stage"],
                     "impact": catalog_entry["impact"],
-                    "recommendation": catalog_entry["recommendation"]
+                    "recommendation": catalog_entry["recommendation"],
+                    "country": str(sample_row.get("country", "")),
+                    "city": str(sample_row.get("city", "")),
+                    "latitude": float(sample_row.get("latitude", 0.0)) if pd.notna(sample_row.get("latitude")) else 0.0,
+                    "longitude": float(sample_row.get("longitude", 0.0)) if pd.notna(sample_row.get("longitude")) else 0.0,
+                    "isp": str(sample_row.get("isp", ""))
                 })
 
         return detected
@@ -290,20 +348,26 @@ class ThreatDetectionEngine:
         for ip, ports in ip_targets.items():
             if len(ports) >= 5 and ip not in ['127.0.0.1', '0.0.0.0']:
                 catalog_entry = THREAT_CATALOG["Port Scanning"]
+                s_row = samples[ip]
                 detected.append({
                     "upload_id": upload_id,
                     "threat_name": "Port Scanning",
                     "severity": "Low",
                     "confidence": 88.0,
                     "source_ip": ip,
-                    "destination_ip": str(samples[ip].get('destination_ip', '10.0.0.1')),
-                    "timestamp": str(samples[ip].get('timestamp', '')),
+                    "destination_ip": str(s_row.get('destination_ip', '10.0.0.1')),
+                    "timestamp": str(s_row.get('timestamp', '')),
                     "evidence": f"Scanned {len(ports)} target ports: {list(ports)[:8]}...",
                     "mitre_id": catalog_entry["mitre_id"],
                     "mitre_technique": catalog_entry["mitre_technique"],
                     "kill_chain_stage": catalog_entry["kill_chain_stage"],
                     "impact": catalog_entry["impact"],
-                    "recommendation": catalog_entry["recommendation"]
+                    "recommendation": catalog_entry["recommendation"],
+                    "country": str(s_row.get("country", "")),
+                    "city": str(s_row.get("city", "")),
+                    "latitude": float(s_row.get("latitude", 0.0)) if pd.notna(s_row.get("latitude")) else 0.0,
+                    "longitude": float(s_row.get("longitude", 0.0)) if pd.notna(s_row.get("longitude")) else 0.0,
+                    "isp": str(s_row.get("isp", ""))
                 })
 
         return detected
@@ -328,20 +392,26 @@ class ThreatDetectionEngine:
         for target, count in ip_counts.items():
             if count >= 3:
                 catalog_entry = THREAT_CATALOG["Beaconing Activity"]
+                s_row = samples[target]
                 detected.append({
                     "upload_id": upload_id,
                     "threat_name": "Beaconing Activity",
                     "severity": "High",
                     "confidence": 92.0,
-                    "source_ip": str(samples[target].get('source_ip', '192.168.1.50')),
+                    "source_ip": str(s_row.get('source_ip', '192.168.1.50')),
                     "destination_ip": target,
-                    "timestamp": str(samples[target].get('timestamp', '')),
-                    "evidence": f"Periodic telemetry check-ins ({count} pulses) to endpoint '{samples[target].get('url', '')}'.",
+                    "timestamp": str(s_row.get('timestamp', '')),
+                    "evidence": f"Periodic telemetry check-ins ({count} pulses) to endpoint '{s_row.get('url', '')}'.",
                     "mitre_id": catalog_entry["mitre_id"],
                     "mitre_technique": catalog_entry["mitre_technique"],
                     "kill_chain_stage": catalog_entry["kill_chain_stage"],
                     "impact": catalog_entry["impact"],
-                    "recommendation": catalog_entry["recommendation"]
+                    "recommendation": catalog_entry["recommendation"],
+                    "country": str(s_row.get("country", "")),
+                    "city": str(s_row.get("city", "")),
+                    "latitude": float(s_row.get("latitude", 0.0)) if pd.notna(s_row.get("latitude")) else 0.0,
+                    "longitude": float(s_row.get("longitude", 0.0)) if pd.notna(s_row.get("longitude")) else 0.0,
+                    "isp": str(s_row.get("isp", ""))
                 })
 
         return detected
@@ -368,6 +438,11 @@ class ThreatDetectionEngine:
                     "mitre_technique": catalog_entry["mitre_technique"],
                     "kill_chain_stage": catalog_entry["kill_chain_stage"],
                     "impact": catalog_entry["impact"],
-                    "recommendation": catalog_entry["recommendation"]
+                    "recommendation": catalog_entry["recommendation"],
+                    "country": str(row.get("country", "")),
+                    "city": str(row.get("city", "")),
+                    "latitude": float(row.get("latitude", 0.0)) if pd.notna(row.get("latitude")) else 0.0,
+                    "longitude": float(row.get("longitude", 0.0)) if pd.notna(row.get("longitude")) else 0.0,
+                    "isp": str(row.get("isp", ""))
                 })
         return detected

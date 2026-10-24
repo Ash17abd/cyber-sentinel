@@ -28,7 +28,13 @@ COUNTRY_REGISTRY = {
     "china": {"country": "China", "city": "Beijing", "lat": 39.9042, "lon": 116.4074},
     "india": {"country": "India", "city": "New Delhi", "lat": 28.6139, "lon": 77.2090},
     "united kingdom": {"country": "United Kingdom", "city": "London", "lat": 51.5074, "lon": -0.1278},
-    "japan": {"country": "Japan", "city": "Tokyo", "lat": 35.6762, "lon": 139.6503}
+    "japan": {"country": "Japan", "city": "Tokyo", "lat": 35.6762, "lon": 139.6503},
+    "sikkim": {"country": "India (Sikkim)", "city": "Gangtok", "lat": 27.5330, "lon": 88.5122},
+    "nagaland": {"country": "India (Nagaland)", "city": "Kohima", "lat": 25.6751, "lon": 94.1086},
+    "rajasthan": {"country": "India (Rajasthan)", "city": "Jaipur", "lat": 26.9124, "lon": 75.7873},
+    "jamshedpur": {"country": "India (Jharkhand)", "city": "Jamshedpur", "lat": 22.8046, "lon": 86.2029},
+    "bilaspur": {"country": "India (Chhattisgarh)", "city": "Bilaspur", "lat": 22.0797, "lon": 82.1409},
+    "bokaro": {"country": "India (Jharkhand)", "city": "Bokaro", "lat": 23.6693, "lon": 86.1511}
 }
 
 class handler(BaseHTTPRequestHandler):
@@ -98,16 +104,31 @@ class handler(BaseHTTPRequestHandler):
                 res["query"] = target
                 return self._send_json(res)
 
-            # 2. Match country name
+            # 2. Match country name or compound location
             target_low = target.lower()
+            matched_key = None
             if target_low in COUNTRY_REGISTRY:
-                c_info = COUNTRY_REGISTRY[target_low]
+                matched_key = target_low
+            elif "," in target_low:
+                for part in target_low.split(","):
+                    p = part.strip()
+                    if p in COUNTRY_REGISTRY:
+                        matched_key = p
+                        break
+            if not matched_key:
+                for k in COUNTRY_REGISTRY:
+                    if len(k) >= 4 and k in target_low:
+                        matched_key = k
+                        break
+
+            if matched_key:
+                c_info = COUNTRY_REGISTRY[matched_key]
                 return self._send_json({
                     "query": target,
                     "reputation": "Country Telemetry Zone",
                     "score": 45,
                     "country": c_info["country"],
-                    "city": c_info["city"],
+                    "city": target.split(",")[0].strip().title() if "," in target else c_info["city"],
                     "lat": c_info["lat"],
                     "lon": c_info["lon"],
                     "asn": "Regional Internet Registry"

@@ -194,10 +194,14 @@ class FileIngestionEngine:
         msg_key = next((clean_col_map[k] for k in msg_keys if k in clean_col_map), None)
 
         # Geographic Location Columns (preserve if present in dataset)
-        country_keys = ['country', 'countryname', 'countrycode', 'sourcecountry', 'srccountry', 'attacker_country', 'origincountry', 'location', 'geo', 'geocountry']
+        country_keys = [
+            'geolocationdata', 'geolocation', 'geodata', 'geoloc', 'locationdata', 'geoinfo',
+            'sourcecountry', 'srccountry', 'attackerlocation', 'origincountry', 'country',
+            'countryname', 'countrycode', 'location', 'geo', 'geocountry', 'sourcegeolocation'
+        ]
         country_key = next((clean_col_map[k] for k in country_keys if k in clean_col_map), None)
 
-        city_keys = ['city', 'cityname', 'sourcecity', 'srccity', 'town']
+        city_keys = ['city', 'cityname', 'sourcecity', 'srccity', 'town', 'state', 'region', 'province']
         city_key = next((clean_col_map[k] for k in city_keys if k in clean_col_map), None)
 
         lat_keys = ['latitude', 'lat', 'srclat', 'sourcelatitude', 'originlatitude']
@@ -206,8 +210,13 @@ class FileIngestionEngine:
         lon_keys = ['longitude', 'lon', 'lng', 'srclon', 'sourcelongitude', 'originlongitude']
         lon_key = next((clean_col_map[k] for k in lon_keys if k in clean_col_map), None)
 
-        isp_keys = ['isp', 'asn', 'org', 'organization', 'provider', 'asname', 'carrier']
+        isp_keys = ['isp', 'asn', 'org', 'organization', 'provider', 'asname', 'carrier', 'networksegment']
         isp_key = next((clean_col_map[k] for k in isp_keys if k in clean_col_map), None)
+
+        sev_keys = ['severitylevel', 'severity', 'threatlevel', 'priority', 'level']
+        sev_key = next((clean_col_map[k] for k in sev_keys if k in clean_col_map), None)
+
+        from modules.attack_map import AttackMapEngine
 
         for _, row in df.iterrows():
             ts = str(row[time_key]) if time_key and pd.notna(row[time_key]) else datetime.now(timezone.utc).isoformat()
@@ -228,11 +237,51 @@ class FileIngestionEngine:
                 dst = found_ips[1] if len(found_ips) > 1 else "10.0.0.1"
 
             evt = str(row[evt_key]) if evt_key and pd.notna(row[evt_key]) else "GENERIC_EVENT"
-            c_val = str(row[country_key]).strip() if country_key and pd.notna(row[country_key]) else ""
-            city_val = str(row[city_key]).strip() if city_key and pd.notna(row[city_key]) else ""
+            c_raw = str(row[country_key]).strip() if country_key and pd.notna(row[country_key]) else ""
+            city_raw = str(row[city_key]).strip() if city_key and pd.notna(row[city_key]) else ""
             lat_val = float(row[lat_key]) if lat_key and pd.notna(row[lat_key]) and str(row[lat_key]).replace('.', '', 1).replace('-', '', 1).isdigit() else 0.0
             lon_val = float(row[lon_key]) if lon_key and pd.notna(row[lon_key]) and str(row[lon_key]).replace('.', '', 1).replace('-', '', 1).isdigit() else 0.0
             isp_val = str(row[isp_key]).strip() if isp_key and pd.notna(row[isp_key]) else ""
+            sev_val = str(row[sev_key]).strip().capitalize() if sev_key and pd.notna(row[sev_key]) else "Medium"
+
+            # Parse compound location strings (e.g. Kaggle "Jamshedpur, Sikkim", "Bokaro, Rajasthan")
+            if c_raw and "," in c_raw:
+                parts = [p.strip() for p in c_raw.split(",") if p.strip()]
+                if len(parts) >= 2:
+                    city_val = parts[0]
+                    c_val = parts[1]
+                    loc_val = f"{city_val}, {c_val}"
+                else:
+                    city_val = city_raw or c_raw
+                    c_val = c_raw
+                    loc_val = c_raw
+            else:
+                c_val = c_raw
+                city_val = city_raw
+                loc_val = f"{city_val}, {c_val}".strip(", ") if (city_val and c_val) else (c_val or city_val)
+
+            # Auto-resolve coordinates if not explicitly in numeric columns
+            if lat_val == 0.0 or lon_val == 0.0:
+                loc_res = AttackMapEngine.resolve_location_name(loc_val or c_val)
+                if loc_res:
+                    lat_val = loc_res["lat"]
+                    lon_val = loc_res["lon"]
+                    if not c_val:
+                        c_val = loc_res["country"]
+                    if not city_val:
+                        city_val = loc_res["city"]
+                    if not isp_val:
+                        isp_val = loc_res.get("isp", "")
+                elif src and src not in ["0.0.0.0", "127.0.0.1", "192.168.1.100"]:
+                    ip_geo = AttackMapEngine.resolve_ip(src, fallback_country=c_val)
+                    lat_val = ip_geo.get("lat", 0.0)
+                    lon_val = ip_geo.get("lon", 0.0)
+                    if not c_val:
+                        c_val = ip_geo.get("country", "")
+                    if not city_val:
+                        city_val = ip_geo.get("city", "")
+                    if not isp_val:
+                        isp_val = ip_geo.get("isp", "")
 
             entry = {
                 "timestamp": ts,
@@ -244,11 +293,13 @@ class FileIngestionEngine:
                 "url": str(row.get('url', '')) if 'url' in row and pd.notna(row['url']) else "",
                 "status_code": str(row.get('status', '200')) if 'status' in row and pd.notna(row['status']) else "",
                 "user_agent": str(row.get('user_agent', '')) if 'user_agent' in row and pd.notna(row['user_agent']) else "",
-                "country": c_val,
-                "city": city_val,
+                "country": c_val or "Detected Origin",
+                "city": city_val or "Regional Point",
+                "location": loc_val or (f"{city_val}, {c_val}" if city_val and c_val else c_val),
                 "latitude": lat_val,
                 "longitude": lon_val,
-                "isp": isp_val
+                "isp": isp_val,
+                "severity": sev_val
             }
             normalized.append(entry)
         return pd.DataFrame(normalized)
@@ -387,6 +438,7 @@ class FileIngestionEngine:
                             "status_code": "0",
                             "user_agent": "",
                             "country": ""
+                        })
                 df_events = pd.DataFrame(rows)
 
         except Exception as e:

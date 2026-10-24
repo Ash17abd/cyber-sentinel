@@ -125,9 +125,15 @@ def render_dashboard_view(threats: List[Dict[str, Any]],
         color = SEVERITY_COLORS.get(sev, "#38BDF8")
         conf = int(threat.get("confidence", 85))
 
+        loc_str = ""
+        c_orig = str(threat.get("country", "")).strip()
+        city_orig = str(threat.get("city", "")).strip()
+        if c_orig or city_orig:
+            loc_str = f" | 📍 {f'{city_orig}, ' if city_orig else ''}{c_orig}"
+
         header_label = (
             f"[{sev.upper()}] {threat.get('threat_name')} — Source: {threat.get('source_ip')} "
-            f"| Confidence: {conf}% | MITRE: {threat.get('mitre_id')}"
+            f"| Confidence: {conf}% | MITRE: {threat.get('mitre_id')}{loc_str}"
         )
 
         with st.expander(header_label):
@@ -148,12 +154,15 @@ def render_dashboard_view(threats: List[Dict[str, Any]],
                 st.write(ai_exp["attacker_methodology"])
 
             with exp_col2:
+                origin_display = f"{city_orig}, {c_orig}" if city_orig and c_orig else (c_orig or city_orig or "Detected Origin")
                 st.markdown(f"""
                 <div style="background: rgba(17, 24, 39, 0.8); border: 1px solid rgba(56, 189, 248, 0.2); border-radius: 8px; padding: 12px; margin-bottom: 12px;">
                     <div style="color: #94A3B8; font-size: 11px;">KILL CHAIN STAGE</div>
                     <div style="color: #00F5FF; font-weight: 700; font-size: 14px;">{threat.get('kill_chain_stage')}</div>
                     <div style="color: #94A3B8; font-size: 11px; margin-top: 8px;">MITRE TECHNIQUE</div>
                     <div style="color: #A855F7; font-weight: 700; font-size: 13px;">{threat.get('mitre_technique')} ({threat.get('mitre_id')})</div>
+                    <div style="color: #94A3B8; font-size: 11px; margin-top: 8px;">GEOGRAPHIC ORIGIN</div>
+                    <div style="color: #38BDF8; font-weight: 700; font-size: 13px;">📍 {origin_display}</div>
                     <div style="color: #94A3B8; font-size: 11px; margin-top: 8px;">CONFIDENCE SCORE</div>
                     <div style="color: #00FF66; font-weight: 800; font-size: 18px;">{ai_exp['confidence_percentage']}</div>
                 </div>

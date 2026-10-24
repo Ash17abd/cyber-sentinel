@@ -47,7 +47,9 @@ code, pre, .mono-text, [data-testid="stCode"] {
     letter-spacing: -0.5px;
     background: linear-gradient(90deg, #00F5FF 0%, #38BDF8 50%, #A855F7 100%);
     -webkit-background-clip: text;
+    background-clip: text;
     -webkit-text-fill-color: transparent;
+    color: transparent;
     margin: 0;
 }
 

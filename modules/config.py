@@ -264,6 +264,26 @@ THREAT_CATALOG: Dict[str, Dict[str, Any]] = {
         "description": "Abnormal volume of outbound data transfers, DNS tunneling requests, or mass archive creation.",
         "impact": "Loss of confidential proprietary data, customer PII exposure, regulatory penalties.",
         "mitigation": "Data Loss Prevention (DLP), egress bandwidth throttling, DNS anomaly inspection, encrypted traffic inspection."
+    },
+    "DDoS Attack": {
+        "severity": "Critical",
+        "mitre_id": "T1498",
+        "mitre_technique": "Network Denial of Service",
+        "mitre_tactic": "Impact",
+        "kill_chain_stage": "Actions on Objectives",
+        "description": "High-volume distributed traffic flooding targeting network bandwidth or service availability.",
+        "impact": "Service unavailability, resource exhaustion, operational downtime.",
+        "mitigation": "Rate limiting, DDoS mitigation scrubbing, CDN caching, upstream IP blocking."
+    },
+    "Intrusion Attempt": {
+        "severity": "High",
+        "mitre_id": "T1190",
+        "mitre_technique": "Exploit Public-Facing Application",
+        "mitre_tactic": "Initial Access",
+        "kill_chain_stage": "Exploitation",
+        "description": "Unauthorized network intrusion attempt detected targeting host services or vulnerabilities.",
+        "impact": "Potential system perimeter breach, unauthorized lateral pivot.",
+        "mitigation": "Intrusion Prevention System (IPS) drop rules, firewall hardening, patch management."
     }
 }
 

@@ -260,14 +260,69 @@ elif selected_page == "📂 Telemetry Ingestion":
         """, unsafe_allow_html=True)
 
     st.markdown("---")
-    st.subheader("📋 Ingested Telemetry Records")
+    st.subheader("📋 Ingested Telemetry & Geolocation Intelligence")
     if not st.session_state.combined_df.empty:
+        df_curr = st.session_state.combined_df
+        total_records = len(df_curr)
+
+        # Location extraction statistics
+        has_coords = ((df_curr["latitude"] != 0.0) | (df_curr["longitude"] != 0.0)).sum() if ("latitude" in df_curr.columns and "longitude" in df_curr.columns) else 0
+        has_country = (df_curr["country"].astype(str).str.strip().str.len() > 0).sum() if "country" in df_curr.columns else 0
+        located_count = max(int(has_coords), int(has_country))
+        loc_pct = int((located_count / total_records) * 100) if total_records > 0 else 0
+
+        unique_countries = df_curr["country"].dropna().unique().tolist() if "country" in df_curr.columns else []
+        clean_countries = [str(c).strip() for c in unique_countries if str(c).strip() and str(c).strip() not in ["Detected Origin", "0.0.0.0", "nan", "None"]]
+        top_countries_str = ", ".join(clean_countries[:6]) if clean_countries else "Global Endpoints"
+
+        # KPI Metric Row
+        m_c1, m_c2, m_c3, m_c4 = st.columns(4)
+        with m_c1:
+            st.metric("Total Ingested Events", f"{total_records:,}")
+        with m_c2:
+            st.metric("Geographic Origins Located", f"{located_count:,} ({loc_pct}%)")
+        with m_c3:
+            st.metric("Regions / Countries Detected", f"{len(clean_countries)}")
+        with m_c4:
+            st.metric("Threats Flagged", f"{len(st.session_state.threats)}")
+
+        # High-visibility Geolocation Detected Banner
+        st.markdown(f"""
+        <div style="background: rgba(0, 245, 255, 0.08); border: 1px solid rgba(0, 245, 255, 0.35); border-radius: 8px; padding: 14px 18px; margin: 12px 0 16px 0; display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <span style="color: #00F5FF; font-weight: 800; font-size: 14px;">📍 GEOLOCATION DETECTED & RESOLVED:</span>
+                <span style="color: #F8FAFC; font-size: 13px; margin-left: 8px;">
+                    Identified <b>{located_count:,}</b> locations across <b>{len(clean_countries)}</b> regions (e.g. {top_countries_str}{'...' if len(clean_countries) > 6 else ''}).
+                </span>
+            </div>
+            <span style="background: rgba(0, 255, 102, 0.15); border: 1px solid #00FF66; color: #00FF66; padding: 4px 10px; border-radius: 4px; font-size: 11px; font-weight: bold;">
+                MAP READY
+            </span>
+        </div>
+        """, unsafe_allow_html=True)
+
+        # Quick Jump Button to Global Attack Map
+        btn_map_col, btn_space_col = st.columns([1, 1])
+        with btn_map_col:
+            if st.button("🗺️ View All Ingested Endpoints on Global Attack Map", type="primary", use_container_width=True):
+                st.session_state.nav_menu = "🗺️ Global Attack Map"
+                st.rerun()
+
+        # Prioritize location columns in dataframe display
+        preferred_cols = [
+            "timestamp", "source_ip", "destination_ip", "event_type",
+            "location", "country", "city", "latitude", "longitude", "severity", "details"
+        ]
+        display_cols = [c for c in preferred_cols if c in df_curr.columns]
+        if not display_cols:
+            display_cols = df_curr.columns.tolist()[:8]
+
         st.dataframe(
-            st.session_state.combined_df[["timestamp", "source_ip", "destination_ip", "event_type", "details"]].head(100),
+            df_curr[display_cols].head(250),
             use_container_width=True
         )
     else:
-        st.info("No telemetry logs currently loaded.")
+        st.info("No telemetry logs currently loaded. Upload a CSV, JSON, LOG, or PDF above.")
 
 # --- PAGE 3: THREAT INTELLIGENCE (IOCs) ---
 elif selected_page == "🔍 Threat Intelligence (IoCs)":
